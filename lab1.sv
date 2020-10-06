@@ -99,8 +99,8 @@ always_ff @(posedge clk or posedge reset) begin
 		      s2: begin in1 <= out2; curr_state <= next_state; in3 <= A3; valid_Q2 <= valid_Q1; done<=0;  end
 		      s3: begin in1 <= out2; curr_state <= next_state; in3 <= A2; valid_Q3 <= valid_Q2;  done<=0; end
 		      s4: begin in1 <= out2; curr_state <= next_state; in3 <= A1; valid_Q4 <= valid_Q3; done<=0;  end
-		      s5: begin in1 <= out2; curr_state <= next_state; in3 <= A0; valid_Q5 <= valid_Q4; done<=1;  end
-            	      s6: begin curr_state <= next_state; valid_Q6 <= valid_Q5; y_Q <= y_D; done<=0; end
+		      s5: begin in1 <= out2; curr_state <= next_state; in3 <= A0; valid_Q5 <= valid_Q4; done<=0;  end
+            	      s6: begin curr_state <= next_state; valid_Q6 <= valid_Q5; y_Q <= y_D; done<=1; end
 		  endcase
 	 end
 end
