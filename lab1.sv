@@ -38,7 +38,7 @@ logic valid_Q3;
 logic valid_Q4;	
 logic valid_Q5;	
 logic valid_Q6;	
-//logic valid_Q2;	
+
 logic done;
 // signal for enabling sequential circuit elements
 logic enable;
@@ -68,48 +68,48 @@ addr32p16 Addr0 (.i_dataa(out1), 	.i_datab(in3), 	.o_res(out2));
 assign y_D = out2;
 
 
-always_comb begin
-	// signal for enable
-	enable = i_ready;
-end
+//always_comb begin
+//	// signal for enable
+//	
+//end
 
 
 
-always @(*) begin
+always @(curr_state) begin
 next_state = curr_state;
-
+enable = i_ready;
 case (curr_state)
-	s0: begin done=0; if (enable) begin next_state=s1; end end
-	s1: begin done=0; if (enable) begin next_state=s2; end end
-	s2: begin done=0; if (enable) begin next_state=s3; end end
-	s3: begin done=0; if (enable) begin next_state=s4; end end
-	s4: begin done=0; if (enable) begin next_state=s5; end end
-	s5: begin done=1; if (enable) begin next_state=s6; end end
-   s6: begin done=0; if (enable) begin next_state=s1; end end
+	s0: begin if (enable) begin  next_state=s1; end else next_state=s0; end
+	s1: begin if (enable) begin  next_state=s2; end else next_state=s1; end
+	s2: begin if (enable) begin  next_state=s3; end else next_state=s2; end
+	s3: begin if (enable) begin  next_state=s4; end else next_state=s3; end
+	s4: begin if (enable) begin  next_state=s5; end else next_state=s4; end
+	s5: begin if (enable) begin  next_state=s6; end else next_state=s5; end
+   s6: begin if (enable) begin  next_state=s1; end else next_state=s6; end
 	endcase
 end
 
 // Infer the registers
 always_ff @(posedge clk or posedge reset) begin
-	if (reset) begin curr_state <= s0; x <= 0; y_Q <= 0; valid_Q1 <= 1'b0;	valid_Q2 <= 1'b0; valid_Q3 <= 1'b0; valid_Q4 <= 1'b0; valid_Q5 <= 1'b0; valid_Q6 <= 1'b0; end
-	//else if (done) begin end 
-	else begin
-        if (curr_state == s1) begin in1 <= A5; x <= i_x; curr_state <= next_state; in3 <= A4; valid_Q1 <= i_valid;  end
-		  if (curr_state == s2) begin in1 <= out2; curr_state <= next_state; in3 <= A3; valid_Q2 <= valid_Q1;  end
-		  if (curr_state == s3) begin in1 <= out2; curr_state <= next_state; in3 <= A2; valid_Q3 <= valid_Q2;  end
-		  if (curr_state == s4) begin in1 <= out2; curr_state <= next_state; in3 <= A1; valid_Q4 <= valid_Q3;  end
-		  if (curr_state == s5) begin in1 <= out2; curr_state <= next_state; in3 <= A0; valid_Q5 <= valid_Q4;  end
-        if (curr_state == s6) begin curr_state <= next_state; valid_Q6 <= valid_Q5; y_Q <= y_D;end
-	     else curr_state <= next_state;
-		 
-	end
+	if (reset) begin curr_state <= s0; end
+	else if (enable) begin
+	     case(curr_state)
+		      s0: begin curr_state <= next_state; x <= 0; y_Q <= 0; valid_Q1 <= 1'b0;	valid_Q2 <= 1'b0; valid_Q3 <= 1'b0; valid_Q4 <= 1'b0; valid_Q5 <= 1'b0; valid_Q6 <= 1'b0;  done<=0; end
+		      s1: begin in1 <= A5; x <= i_x; curr_state <= next_state; in3 <= A4; valid_Q1 <= i_valid; done<=0;  end
+		      s2: begin in1 <= out2; curr_state <= next_state; in3 <= A3; valid_Q2 <= valid_Q1; done<=0;  end
+		      s3: begin in1 <= out2; curr_state <= next_state; in3 <= A2; valid_Q3 <= valid_Q2;  done<=0; end
+		      s4: begin in1 <= out2; curr_state <= next_state; in3 <= A1; valid_Q4 <= valid_Q3; done<=0;  end
+		      s5: begin in1 <= out2; curr_state <= next_state; in3 <= A0; valid_Q5 <= valid_Q4; done<=1;  end
+            	      s6: begin curr_state <= next_state; valid_Q6 <= valid_Q5; y_Q <= y_D; done<=0; end
+		  endcase
+	 end
 end
 	
 
 // assign outputs
 assign o_y = y_Q;
 // ready for inputs as long as receiver is ready for outputs */
-assign o_ready = done;   		
+assign o_ready = done & i_ready;  		
 
 assign o_valid = valid_Q6 & i_valid;	
 
